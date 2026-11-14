@@ -24,7 +24,7 @@ jobs:
           gradle-version: '8.9'
 
       - name: Installer Android SDK
-        uses: android-actions/setup-android@v3
+        uses: android-actions/setup-android@4
 
       - name: Construire l'APK
         run: gradle assembleDebug
