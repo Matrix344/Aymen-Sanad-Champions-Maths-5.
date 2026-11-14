@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#172554">
+<title>Aymen & Sanad – Champions des Maths</title>
+<style>
+*{box-sizing:border-box}body{margin:0;min-height:100vh;padding:18px;display:grid;place-items:center;background:#eef4ff;color:#172554;font-family:system-ui,Arial,sans-serif}
+.app{width:min(100%,520px);padding:24px;background:white;border-radius:26px;box-shadow:0 16px 50px #17356b20}
+header{text-align:center;margin-bottom:22px}h1{margin:0;font-size:clamp(1.6rem,6vw,2.2rem)}header p,.note{color:#64748b}
+h2{margin:8px 0 16px}.profiles,.ops,.levels,.answers{display:grid;gap:12px}
+.profiles{grid-template-columns:1fr 1fr}.ops{grid-template-columns:1fr 1fr}.levels{grid-template-columns:repeat(3,1fr)}
+button{border:0;border-radius:15px;padding:15px;font:inherit;font-weight:750;cursor:pointer;background:#e7efff;color:#17356b}
+button:focus-visible{outline:3px solid #f59e0b;outline-offset:3px}.profile{padding:22px 8px;background:#eff6ff;font-size:1.1rem}
+.profile strong{display:block;font-size:1.35rem}.small{font-size:.9rem;color:#64748b}
+.primary{background:#2563eb;color:white}.secondary{background:#e2e8f0;color:#334155}
+.hidden{display:none!important}.bar{display:flex;justify-content:space-between;gap:8px;font-weight:700;color:#475569}
+.hearts{font-size:1.25rem;letter-spacing:2px;color:#e11d48}.question{text-align:center;font-size:clamp(2.5rem,12vw,4rem);font-weight:850;margin:28px 0}
+.answers{grid-template-columns:repeat(3,1fr)}.answers button{font-size:1.25rem}
+.feedback{text-align:center;min-height:32px;margin:14px 0;font-weight:800}.result{text-align:center;padding:16px 0}.result .big{font-size:3rem}
+.note{text-align:center;font-size:.88rem;margin-top:20px}
+@media(max-width:380px){.levels{grid-template-columns:1fr}.answers{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<main class="app">
+<header><h1>🏆 Aymen & Sanad</h1><p>Champions des Maths</p></header>
+<section id="home">
+<h2>Qui va jouer aujourd'hui ?</h2>
+<div class="profiles">
+<button class="profile" onclick="selectPlayer('Aymen',13)"><strong>🦁 Aymen</strong><span class="small">13 ans</span></button>
+<button class="profile" onclick="selectPlayer('Sanad',9)"><strong>🚀 Sanad</strong><span class="small">9 ans</span></button>
+</div><p class="note">Chaque joueur garde son meilleur score sur cet appareil.</p>
+</section>
+<section id="setup" class="hidden">
+<h2 id="welcome"></h2><p>Choisis une opération :</p>
+<div class="ops">
+<button onclick="chooseOperation('+',this)">➕ Addition</button><button onclick="chooseOperation('-',this)">➖ Soustraction</button>
+<button onclick="chooseOperation('*',this)">✖️ Multiplication</button><button onclick="chooseOperation('/',this)">➗ Division</button>
+</div>
+<p>Choisis ton niveau :</p><div class="levels">
+<button onclick="startGame('facile')">Facile</button><button onclick="startGame('moyen')">Moyen</button><button onclick="startGame('difficile')">Difficile</button>
+</div><button class="secondary" style="width:100%;margin-top:14px" onclick="show('home')">Changer de joueur</button>
+</section>
+<section id="game" class="hidden">
+<div class="bar"><span id="who"></span><span id="count"></span></div>
+<div class="bar" style="margin-top:10px"><span id="score"></span><span class="hearts" id="hearts"></span></div>
+<div class="question" id="question"></div><div class="answers" id="answers"></div>
+<div class="feedback" id="feedback" aria-live="polite"></div>
+<button id="next" class="primary hidden" style="width:100%" onclick="nextQuestion()">Question suivante</button>
+</section>
+<section id="result" class="hidden result">
+<div class="big" id="icon"></div><h2 id="title"></h2><p id="message"></p><p id="record"></p>
+<button class="primary" style="width:100%" onclick="startGame(level)">Rejouer</button>
+<button class="secondary" style="width:100%;margin-top:10px" onclick="show('home')">Retour aux profils</button>
+</section>
+<p class="note">Gratuit • Sans publicité • Sans compte • Hors connexion</p>
+</main>
+<script>
+let player='',age=0,operation='+',level='facile',number=0,points=0,lives=3,solution=0,answered=false;
+const el=id=>document.getElementById(id);
+function show(id){['home','setup','game','result'].forEach(s=>el(s).classList.toggle('hidden',s!==id))}
+function selectPlayer(name,years){player=name;age=years;el('welcome').textContent='Bonjour '+name+' ! À toi de jouer !';show('setup')}
+function chooseOperation(op,button){operation=op;document.querySelectorAll('.ops button').forEach(b=>b.style.outline='');button.style.outline='3px solid #f59e0b'}
+function random(min,max){return Math.floor(Math.random()*(max-min+1))+min}
+function questionText(){
+ let a,b;
+ const limits=age===13?{facile:20,moyen:100,difficile:500}:{facile:10,moyen:30,difficile:100};
+ const max=limits[level];
+ if(operation==='+'){a=random(1,max);b=random(1,max);solution=a+b}
+ else if(operation==='-'){a=random(1,max);b=random(1,a);solution=a-b}
+ else if(operation==='*'){let cap=age===13?(level==='facile'?12:level==='moyen'?20:30):(level==='facile'?5:level==='moyen'?10:12);a=random(1,cap);b=random(1,cap);solution=a*b}
+ else{b=random(1,age===13?15:10);solution=random(1,age===13?20:10);a=b*solution}
+ return `${a} ${operation==='*'?'×':operation==='/'?'÷':operation==='-'?'−':'+'} ${b} = ?`
+}
+function startGame(chosenLevel){level=chosenLevel;number=0;points=0;lives=3;show('game');nextQuestion()}
+function nextQuestion(){
+ if(lives===0||number===10){finish();return}
+ number++;answered=false;el('next').classList.add('hidden');el('feedback').textContent='';
+ el('who').textContent=player+' • '+level;el('count').textContent='Question '+number+'/10';
+ el('score').textContent='Score : '+points;el('hearts').textContent='❤️'.repeat(lives)+'🖤'.repeat(3-lives);
+ el('question').textContent=questionText();
+ const choices=new Set([solution]);while(choices.size<3){let d=random(1,Math.max(5,Math.ceil(Math.abs(solution)*.2)));choices.add(Math.max(0,solution+(Math.random()<.5?-d:d)))}
+ el('answers').innerHTML='';[...choices].sort(()=>Math.random()-.5).forEach(value=>{let b=document.createElement('button');b.textContent=value;b.onclick=()=>checkAnswer(value,b);el('answers').appendChild(b)})
+}
+function checkAnswer(value,button){
+ if(answered)return;answered=true;[...el('answers').children].forEach(b=>b.disabled=true);
+ if(value===solution){points++;button.style.background='#bbf7d0';el('feedback').textContent='✅ Bravo ! Bonne réponse.';el('feedback').style.color='#15803d'}
+ else{lives--;button.style.background='#fecaca';el('feedback').textContent='❌ La bonne réponse était '+solution+'.';el('feedback').style.color='#b91c1c'}
+ el('score').textContent='Score : '+points;el('hearts').textContent='❤️'.repeat(lives)+'🖤'.repeat(3-lives);
+ el('next').textContent=(number===10||lives===0)?'Voir mon résultat':'Question suivante';el('next').classList.remove('hidden')
+}
+function finish(){
+ show('result');let alive=lives>0,perfect=points===10&&alive;
+ el('icon').textContent=perfect?'🎆🎉🏆':alive?'⭐':'💪';
+ el('title').textContent=perfect?'INCROYABLE ! 10/10':alive?'Bravo '+player+' !':'PERDU !';
+ el('message').textContent=perfect?'Tu es un champion des maths !':alive?points+'/10 bonnes réponses. Continue tes efforts !':'Tu as perdu tes trois vies. Tu peux recommencer !';
+ if(alive&&points>=5)el('message').textContent+=' Bravo, tu as au moins 5/10 !';
+ const key='champions-maths-'+player,old=Number(localStorage.getItem(key)||0);if(points>old)localStorage.setItem(key,String(points));
+ el('record').textContent='Meilleur score : '+Math.max(points,old)+'/10';
+}
+</script>
+</body></html>
